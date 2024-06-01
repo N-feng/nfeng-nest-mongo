@@ -50,8 +50,14 @@ export class UserController {
   @Get('findOne/:id')
   @ApiOperation({ summary: '查询用户' })
   async findOne(@Query('username') username: string = 'nfeng') {
-    const { age, email, mobile, password, sex, id } =
-      await this.userService.findOne(username);
+    const {
+      age,
+      email,
+      mobile,
+      password,
+      sex,
+      _id: id,
+    } = await this.userService.findOne(username);
     const access = await this.userService.getAccessById(id);
     return {
       code: 200,
@@ -63,7 +69,7 @@ export class UserController {
   @ApiOperation({ summary: '创建用户' })
   async create(@Body() body: CreateUserDto) {
     const password = this.toolsService.getMd5(body.password);
-    const newParam = { ...body, password, status: true };
+    const newParam = { ...body, password };
     await this.userService.create(newParam);
     return { code: 200, data: {} };
   }
@@ -84,8 +90,8 @@ export class UserController {
   @ApiOperation({ summary: '编辑用户' })
   async update(@Param('id') id: string, @Body() body: CreateUserDto) {
     const password = this.toolsService.getMd5(body.password);
-    await this.userService.update(id, { ...body, password });
-    return { code: 200, data: {} };
+    // await this.userService.update(id, { ...body, password });
+    return { code: 200, data: { password } };
   }
 
   @Delete('remove')

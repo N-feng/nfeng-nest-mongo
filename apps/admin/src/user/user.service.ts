@@ -1,16 +1,14 @@
-import { User } from '@app/db/entities/user.entity';
-import { UserRole } from '@app/db/entities/userRole.entity';
+import { User } from '@app/db/schemas/user.schema';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
-    @InjectRepository(UserRole)
-    private userRoleRepository: Repository<UserRole>,
+    @InjectModel(User.name) private userModel: Model<User>,
+    // @InjectRepository(UserRole)
+    // private userRoleRepository: Repository<UserRole>,
     // @InjectRepository(RoleAccessEntity)
     // private roleAccessRepository: Repository<RoleAccessEntity>,
     // @InjectRepository(AccessEntity)
@@ -19,16 +17,11 @@ export class UserService {
   ) {}
 
   async findAll() {
-    return await this.usersRepository.find({
-      // include: [PhotoModel, Role],
-      select: {
-        username: true,
-      },
-    });
+    return this.userModel.find();
   }
 
   async findOne(username) {
-    const u = await this.usersRepository.findOne({
+    const u = await this.userModel.findOne({
       where: { username },
       // include: [PhotoModel, Role],
     });
@@ -59,12 +52,13 @@ export class UserService {
 
   async create(user) {
     const { username } = user;
-    const u = await this.usersRepository.findOne({ where: { username } });
+    const u = await this.userModel.find({ username });
+    console.log('u: ', u);
 
-    if (u) {
+    if (u.length) {
       throw new BadRequestException({ code: 400, msg: '用户已经注册' });
     }
-    return await this.usersRepository.create({
+    return await this.userModel.create({
       ...user,
       password: user.password,
     });
@@ -91,28 +85,28 @@ export class UserService {
     // }
   }
 
-  async update(id, user) {
-    // 1. 删除用户角色
-    await this.userRoleRepository.delete(id);
+  // async update(id, user) {
+  //   // 1. 删除用户角色
+  //   await this.userRoleRepository.delete(id);
 
-    // 2. 添加用户角色
-    for (let i = 0; i < user.roleIds.length; i++) {
-      await this.userRoleRepository.create({
-        userId: id,
-        roleId: user.roleIds[i],
-      });
-    }
+  //   // 2. 添加用户角色
+  //   for (let i = 0; i < user.roleIds.length; i++) {
+  //     await this.userRoleRepository.create({
+  //       userId: id,
+  //       roleId: user.roleIds[i],
+  //     });
+  //   }
 
-    return await this.usersRepository.update(
-      { id },
-      {
-        ...user,
-        password: user.password,
-      },
-    );
-  }
+  //   return await this.usersModel.update(
+  //     { _id: id },
+  //     {
+  //       ...user,
+  //       password: user.password,
+  //     },
+  //   );
+  // }
 
   async delete(id) {
-    return await this.usersRepository.delete(id);
+    return await this.userModel.findByIdAndDelete(id);
   }
 }

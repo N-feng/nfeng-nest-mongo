@@ -1,35 +1,30 @@
 import { Global, Module } from '@nestjs/common';
 import { DbService } from './db.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { Role } from './entities/role.entity';
-import { Access } from './entities/access.entity';
-import { UserRole } from './entities/userRole.entity';
-import { RoleAccess } from './entities/roleAccess.entity';
-import { Photo } from './entities/photo.entity';
+import { User, UserSchema } from './schemas/user.schema';
+// import { Role } from './schemas/role.entity';
+// import { Access } from './schemas/access.entity';
+// import { UserRole } from './schemas/userRole.entity';
+// import { RoleAccess } from './schemas/roleAccess.entity';
+// import { Photo } from './schemas/photo.entity';
+import { MongooseModule } from '@nestjs/mongoose';
 
-const models = TypeOrmModule.forFeature([
-  User,
-  Role,
-  Access,
-  UserRole,
-  RoleAccess,
-  Photo,
+const models = MongooseModule.forFeature([
+  { name: User.name, schema: UserSchema, collection: 'user' },
+  // User,
+  // Role,
+  // Access,
+  // UserRole,
+  // RoleAccess,
+  // Photo,
 ]);
 
 @Global()
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({
-      useFactory: () => ({
-        type: 'mongodb',
-        host: process.env.DB_HOST,
-        port: 27017,
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_DATABASE,
-        entities: [User, Role, Access, UserRole, RoleAccess, Photo],
-        synchronize: true,
+    MongooseModule.forRootAsync({
+      useFactory: async () => ({
+        uri: process.env.DB,
+        useUnifiedTopology: true,
       }),
     }),
     models,

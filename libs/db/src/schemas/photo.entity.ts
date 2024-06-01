@@ -8,7 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from './user.schema';
 
 @Entity()
 export class Photo {

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { Access } from './access.entity';
-import { Role } from './role.entity';
+import { Role } from './role.schema';
 
 @Entity()
 export class RoleAccess {
