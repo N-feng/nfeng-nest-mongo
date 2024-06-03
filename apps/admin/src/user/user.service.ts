@@ -1,14 +1,14 @@
 import { User } from '@app/db/schemas/user.schema';
+import { UserRole } from '@app/db/schemas/userRole.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    // @InjectRepository(UserRole)
-    // private userRoleRepository: Repository<UserRole>,
+    @InjectModel(UserRole.name) private userRoleModel: Model<UserRole>,
     // @InjectRepository(RoleAccessEntity)
     // private roleAccessRepository: Repository<RoleAccessEntity>,
     // @InjectRepository(AccessEntity)
@@ -52,10 +52,9 @@ export class UserService {
 
   async create(user) {
     const { username } = user;
-    const u = await this.userModel.find({ username });
-    console.log('u: ', u);
+    const u = await this.userModel.findOne({ username });
 
-    if (u.length) {
+    if (u) {
       throw new BadRequestException({ code: 400, msg: '用户已经注册' });
     }
     return await this.userModel.create({
@@ -85,26 +84,26 @@ export class UserService {
     // }
   }
 
-  // async update(id, user) {
-  //   // 1. 删除用户角色
-  //   await this.userRoleRepository.delete(id);
+  async update(id, user) {
+    // 1. 删除用户角色
+    await this.userRoleModel.deleteMany({ userId: id });
 
-  //   // 2. 添加用户角色
-  //   for (let i = 0; i < user.roleIds.length; i++) {
-  //     await this.userRoleRepository.create({
-  //       userId: id,
-  //       roleId: user.roleIds[i],
-  //     });
-  //   }
+    // 2. 添加用户角色
+    for (let i = 0; i < user.roleIds.length; i++) {
+      await this.userRoleModel.create({
+        userId: mongoose.Types.ObjectId.createFromHexString(id),
+        roleId: mongoose.Types.ObjectId.createFromHexString(user.roleIds[i]),
+      });
+    }
 
-  //   return await this.usersModel.update(
-  //     { _id: id },
-  //     {
-  //       ...user,
-  //       password: user.password,
-  //     },
-  //   );
-  // }
+    return await this.userModel.findByIdAndUpdate(
+      { _id: id },
+      {
+        ...user,
+        password: user.password,
+      },
+    );
+  }
 
   async delete(id) {
     return await this.userModel.findByIdAndDelete(id);

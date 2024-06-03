@@ -90,8 +90,8 @@ export class UserController {
   @ApiOperation({ summary: '编辑用户' })
   async update(@Param('id') id: string, @Body() body: CreateUserDto) {
     const password = this.toolsService.getMd5(body.password);
-    // await this.userService.update(id, { ...body, password });
-    return { code: 200, data: { password } };
+    await this.userService.update(id, { ...body, password });
+    return { code: 200, data: {} };
   }
 
   @Delete('remove')

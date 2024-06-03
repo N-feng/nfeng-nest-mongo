@@ -1,23 +1,13 @@
-// import { ProductModel } from './product.model';
-// import { SettingModel } from './setting.model';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.schema';
+import mongoose from 'mongoose';
 
-@Entity()
+@Schema({
+  timestamps: true,
+})
 export class Photo {
-  @PrimaryGeneratedColumn()
-  uid: number;
-
-  @ManyToOne(() => User)
-  @Column()
-  userId: number;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  userId: User;
 
   // @BelongsTo(() => UserModel)
   // user: UserModel;
@@ -36,24 +26,20 @@ export class Photo {
   // @BelongsTo(() => SettingModel)
   // setting: SettingModel;
 
-  @Column()
+  @Prop()
   url: string;
 
-  @Column()
+  @Prop()
   name: string;
 
-  @Column()
+  @Prop()
   status: string;
 
-  @Column()
+  @Prop()
   percent: number;
 
-  @Column()
+  @Prop()
   thumbUrl: string;
-
-  @CreateDateColumn()
-  createdAt?: Date;
-
-  @UpdateDateColumn()
-  updatedAt?: Date;
 }
+
+export const PhotoSchema = SchemaFactory.createForClass(Photo);

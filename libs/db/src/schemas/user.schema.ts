@@ -33,8 +33,8 @@ export class User {
   // @OneToMany(() => Photo, (photo) => photo.userId)
   // photos: Photo[];
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Role' }] })
-  roles: Role[];
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Photo' }] })
+  photos: Role[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,23 +1,23 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import mongoose from 'mongoose';
 import { Role } from './role.schema';
 import { User } from './user.schema';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Entity()
+@Schema({
+  timestamps: true,
+})
 export class UserRole {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @ManyToOne(() => User)
-  @Column({ length: 11 })
-  public userId: number;
+  @Prop({ length: 11, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  userId: User;
 
   // @BelongsTo(() => UserModel)
   // public user: UserModel;
 
-  @ManyToOne(() => Role)
-  @Column({ length: 11 })
-  public roleId: number;
+  @Prop({ length: 11, type: mongoose.Schema.Types.ObjectId, ref: 'Role' })
+  roleId: Role;
 
   // @BelongsTo(() => Role)
   // public role: Role;
 }
+
+export const UserRoleSchema = SchemaFactory.createForClass(UserRole);

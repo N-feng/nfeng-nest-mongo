@@ -1,20 +1,17 @@
-import { Prop, Schema } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
-import { User } from './user.schema';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({
   timestamps: true,
 })
-export class Role extends Document {
+export class Role {
   @Prop()
   title: string;
 
   @Prop()
   description: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  user: User;
-
   // @OneToMany(() => Access, () => RoleAccess)
   // access: Access[];
 }
+
+export const RoleSchema = SchemaFactory.createForClass(Role);
