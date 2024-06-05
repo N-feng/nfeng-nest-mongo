@@ -1,9 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AdminModule } from './admin.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as session from 'express-session';
+import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AdminModule);
+  const app = await NestFactory.create<NestExpressApplication>(AdminModule);
+
+  // 配置静态资源目录
+  app.useStaticAssets(path.join(__dirname, '../../../', 'public'), {
+    prefix: '/static',
+  });
+
+  // 配置session的中间件
+  app.use(
+    session({
+      secret: process.env.SECRET || 'keyboard cat',
+      resave: true,
+      saveUninitialized: true,
+      // cookie: { maxAge: 109000, httpOnly: true },
+      rolling: true,
+    }),
+  );
 
   const options = new DocumentBuilder()
     .setTitle('管理后台API')

@@ -18,6 +18,9 @@ export class UserRole {
 
   // @BelongsTo(() => Role)
   // public role: Role;
+
+  @Prop()
+  roleName: string;
 }
 
 export const UserRoleSchema = SchemaFactory.createForClass(UserRole);

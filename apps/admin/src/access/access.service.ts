@@ -1,5 +1,5 @@
-import { Access } from '@app/db/schemas/access.entity';
-import { RoleAccess } from '@app/db/schemas/roleAccess.entity';
+import { Access } from '@app/db/schemas/access.schema';
+import { RoleAccess } from '@app/db/schemas/roleAccess.schema';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';

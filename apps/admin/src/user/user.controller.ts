@@ -32,19 +32,7 @@ export class UserController {
   @ApiOperation({ summary: '用户列表' })
   async findAll() {
     const result = await this.userService.findAll();
-    console.log('result: ', result);
     return { code: 200, data: { list: result } };
-    // const list = result.map((item) => {
-    //   return {
-    //     ...item.toJSON(),
-    //     password: '',
-    //     roleIds: item.roles.map((role) => role.id),
-    //   };
-    // });
-    // return {
-    //   code: 200,
-    //   data: { list },
-    // };
   }
 
   @Get('findOne/:id')

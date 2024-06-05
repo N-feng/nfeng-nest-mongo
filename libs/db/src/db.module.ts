@@ -2,11 +2,11 @@ import { Global, Module } from '@nestjs/common';
 import { DbService } from './db.service';
 import { User, UserSchema } from './schemas/user.schema';
 import { Role, RoleSchema } from './schemas/role.schema';
-import { Access, AccessSchema } from './schemas/access.entity';
-import { RoleAccess, RoleAccessSchema } from './schemas/roleAccess.entity';
-import { Photo, PhotoSchema } from './schemas/photo.entity';
+import { Access, AccessSchema } from './schemas/access.schema';
+import { RoleAccess, RoleAccessSchema } from './schemas/roleAccess.schema';
+import { Photo, PhotoSchema } from './schemas/photo.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserRole, UserRoleSchema } from './schemas/userRole.entity';
+import { UserRole, UserRoleSchema } from './schemas/userRole.schema';
 
 const models = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema, collection: 'user' },

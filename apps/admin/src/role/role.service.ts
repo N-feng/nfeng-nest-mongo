@@ -1,4 +1,4 @@
-import { Access } from '@app/db/schemas/access.entity';
+import { Access } from '@app/db/schemas/access.schema';
 import { Role } from '@app/db/schemas/role.schema';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -9,9 +9,21 @@ export class RoleService {
   constructor(@InjectModel(Role.name) private roleModel: Model<Role>) {}
 
   async findAll() {
-    return await this.roleModel.find({
-      // include: [Access],
-    });
+    return await this.roleModel.aggregate([
+      {
+        $lookup: {
+          from: 'roleAccess',
+          localField: '_id',
+          foreignField: 'roleId',
+          as: 'access',
+          pipeline: [
+            {
+              $unset: ['__v', 'isActive', 'createdAt', 'updatedAt'],
+            },
+          ],
+        },
+      },
+    ]);
   }
 
   async findOne(id) {

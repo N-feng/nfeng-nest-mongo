@@ -1,5 +1,8 @@
+import { Access } from '@app/db/schemas/access.schema';
+import { Role } from '@app/db/schemas/role.schema';
+import { RoleAccess } from '@app/db/schemas/roleAccess.schema';
 import { User } from '@app/db/schemas/user.schema';
-import { UserRole } from '@app/db/schemas/userRole.entity';
+import { UserRole } from '@app/db/schemas/userRole.schema';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -8,46 +11,66 @@ import mongoose, { Model } from 'mongoose';
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Role.name) private roleModel: Model<Role>,
     @InjectModel(UserRole.name) private userRoleModel: Model<UserRole>,
-    // @InjectRepository(RoleAccessEntity)
-    // private roleAccessRepository: Repository<RoleAccessEntity>,
-    // @InjectRepository(AccessEntity)
-    // private accessRepository: Repository<AccessEntity>,
-    // private sequelize: Sequelize,
+    @InjectModel(Access.name) private accessModel: Model<Access>,
+    @InjectModel(RoleAccess.name) private roleAccessModel: Model<RoleAccess>,
   ) {}
 
   async findAll() {
-    return this.userModel.find();
+    return this.userModel.aggregate([
+      {
+        $lookup: {
+          from: 'userRole',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'roles',
+          pipeline: [
+            {
+              $unset: ['__v', 'isActive', 'createdAt', 'updatedAt'],
+            },
+          ],
+        },
+      },
+      {
+        $unset: ['password', '__v', 'isActive', 'createdAt', 'updatedAt'],
+      },
+    ]);
   }
 
   async findOne(username) {
-    const u = await this.userModel.findOne({
-      where: { username },
-      // include: [PhotoModel, Role],
-    });
-    if (!u) {
+    const u = await this.userModel.aggregate([
+      {
+        $lookup: {
+          from: 'userRole',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'roles',
+        },
+      },
+      {
+        $match: {
+          username,
+        },
+      },
+    ]);
+    if (!u.length) {
       throw new BadRequestException({ code: 400, msg: '找不到用户' });
     }
-    return u;
+    return u[0];
   }
 
   async getAccessById(id) {
-    return id;
-    // const userRole = await this.userRoleRepository.find({
-    //   where: { userId: id },
-    // });
-    // const roleAccess = await this.roleAccessRepository.find({
-    //   where: {
-    //     roleId: userRole.map((item) => item.roleId),
-    //   },
-    //   include: [Access],
-    // });
-    // const access = await this.accessRepository.find({
-    //   where: {
-    //     id: roleAccess.map((item) => item.accessId),
-    //   },
-    // });
-    // return access;
+    const userRole = await this.userRoleModel.find({
+      userId: id,
+    });
+    const roleAccess = await this.roleAccessModel.find({
+      roleId: userRole.map((item) => item.roleId),
+    });
+    const access = await this.accessModel.find({
+      _id: roleAccess.map((item) => item.accessId),
+    });
+    return access;
   }
 
   async create(user) {
@@ -88,11 +111,15 @@ export class UserService {
     // 1. 删除用户角色
     await this.userRoleModel.deleteMany({ userId: id });
 
-    // 2. 添加用户角色
-    for (let i = 0; i < user.roleIds.length; i++) {
+    // 2.查找需要添加的角色
+    const roles = await this.roleModel.find({ _id: user.roleIds });
+
+    // 3. 添加用户角色
+    for (let i = 0; i < roles.length; i++) {
       await this.userRoleModel.create({
         userId: mongoose.Types.ObjectId.createFromHexString(id),
-        roleId: mongoose.Types.ObjectId.createFromHexString(user.roleIds[i]),
+        roleId: roles[i]._id,
+        roleName: roles[i].title,
       });
     }
 
@@ -107,5 +134,9 @@ export class UserService {
 
   async delete(id) {
     return await this.userModel.findByIdAndDelete(id);
+  }
+
+  getModel() {
+    return this.userModel;
   }
 }

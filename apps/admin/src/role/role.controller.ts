@@ -21,22 +21,7 @@ export class RoleController {
   @Post('findAll')
   @ApiOperation({ summary: '角色列表' })
   async findAll() {
-    // const result = await this.roleService.findAll();
-    const result = await this.roleService.getModel().aggregate([
-      {
-        $lookup: {
-          from: 'roleAccess',
-          localField: '_id',
-          foreignField: 'roleId',
-          as: 'access',
-        },
-      },
-      // {
-      //   $match: {
-      //     moduleId: '0',
-      //   },
-      // },
-    ]);
+    const result = await this.roleService.findAll();
     return { code: 200, data: { list: result } };
   }
 
